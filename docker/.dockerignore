@@ -1,0 +1,9 @@
+# Exclude sensitive and unnecessary files
+../.env
+../*.log
+../node_modules/
+../.git/
+../tmp/
+
+# Ignore the docker directory itself
+../docker/

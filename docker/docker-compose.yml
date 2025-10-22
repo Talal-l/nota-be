@@ -1,0 +1,16 @@
+services:
+  nota:
+    container_name: nota
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "5010:8080"
+    # restart: unless-stopped
+    volumes:
+      - ../.env:/app/.env:ro # Mount .env file as read-only
+    networks:
+      - nota-network
+networks:
+  nota-network:
+    driver: bridge

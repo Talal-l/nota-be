@@ -1,0 +1,37 @@
+services:
+  nota-db:
+    image: postgres:16-alpine
+    container_name: nota-db-dev
+    environment:
+      # Create superuser/admin using the admin credentials
+      - POSTGRES_USER=${DB_USER_ADMIN}
+      - POSTGRES_PASSWORD=${DB_PASSWORD_ADMIN}
+      - POSTGRES_DB=${DB_NAME}
+      # Pass app user credentials to init script
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      # Optional: Set locale and encoding settings
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      # Persist database data
+      - postgres-data:/var/lib/postgresql/data
+      # Mount init scripts (will run on first startup only)
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER_ADMIN} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - nota-network
+
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  nota-network:
+    driver: bridge

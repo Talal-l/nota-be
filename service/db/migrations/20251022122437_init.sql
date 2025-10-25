@@ -11,7 +11,7 @@ CREATE TABLE users(
 
 CREATE TABLE content(
     id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
+    title VARCHAR(255),
     content TEXT NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

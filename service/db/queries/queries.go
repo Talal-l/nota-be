@@ -19,3 +19,31 @@ func CreateUser(ctx context.Context, db *bun.DB, email string, name string) (*mo
 
 	return user, nil
 }
+
+type CreateContentArgs struct {
+	Content string
+	UserID  int64
+}
+
+func CreateContent(ctx context.Context, db *bun.DB, args CreateContentArgs) (*models.Content, error) {
+	content := &models.Content{
+		Content: args.Content,
+		UserID:  args.UserID,
+	}
+	_, err := db.NewInsert().Model(content).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return content, nil
+}
+
+func GetContents(ctx context.Context, db *bun.DB) ([]models.Content, error) {
+	var content []models.Content
+	err := db.NewSelect().Model(&content).Relation("User").Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return content, nil
+}

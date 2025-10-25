@@ -107,3 +107,100 @@ func CreateUserHandler(db *bun.DB) middleware.APIFunc {
 		return response.NewAPIResponse(user, nil)
 	}
 }
+
+type CreateContentReq struct {
+	Content string
+}
+
+func (r CreateContentReq) Valid(ctx context.Context) map[string]string {
+	if r.Content == "" {
+		return map[string]string{"value": "value is required"}
+	}
+
+	problems := make(map[string]string)
+	return problems
+}
+
+// @Summary create content endpoint
+// @Description Create new content for current user
+// @Tags Content
+// @Accept json
+// @Produce json
+// @Param request body CreateContentReq true "New content"
+// @Success 200 {object} response.APIResponse
+// @Failure 500 {object} response.APIResponse
+// @Router /content [post]
+func CreateContentHandler(db *bun.DB) middleware.APIFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) response.APIResponse {
+		_, err := logger.WithTraceHeaders(r)
+
+		if err != nil {
+			return response.NewAPIResponse(nil, &errs.ApiError{
+				Message:    err.Error(),
+				StatusCode: http.StatusInternalServerError,
+			})
+		}
+
+		req, problems, err := util.DecodeValid[CreateContentReq](r)
+		if err != nil {
+			return response.NewAPIResponse(nil, &errs.ApiError{
+				Message:    err.Error(),
+				StatusCode: http.StatusInternalServerError,
+			})
+		}
+
+		if len(problems) > 0 {
+			return response.NewAPIResponse(nil, &errs.ApiError{
+				Message:    "validation failed",
+				StatusCode: http.StatusBadRequest,
+				Details:    problems,
+			})
+		}
+
+		content, err := queries.CreateContent(r.Context(), db, queries.CreateContentArgs{
+			UserID:  1,
+			Content: req.Content,
+		})
+		if err != nil {
+			return response.NewAPIResponse(nil, &errs.ApiError{
+				Message:    err.Error(),
+				StatusCode: http.StatusInternalServerError,
+			})
+		}
+
+		return response.NewAPIResponse(content, nil)
+	}
+}
+
+// @Summary get content endpoint
+// @Description Get content for current user
+// @Tags Content
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.APIResponse
+// @Failure 500 {object} response.APIResponse
+// @Router /content [get]
+func GetContentHandler(db *bun.DB) middleware.APIFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) response.APIResponse {
+		_, err := logger.WithTraceHeaders(r)
+
+		if err != nil {
+			return response.NewAPIResponse(nil, &errs.ApiError{
+				Message:    err.Error(),
+				StatusCode: http.StatusInternalServerError,
+			})
+		}
+
+		content, err := queries.GetContents(r.Context(), db)
+		if err != nil {
+			return response.NewAPIResponse(nil, &errs.ApiError{
+				Message:    err.Error(),
+				StatusCode: http.StatusInternalServerError,
+			})
+		}
+
+		return response.NewAPIResponse(content, nil)
+	}
+}

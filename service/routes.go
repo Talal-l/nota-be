@@ -21,4 +21,6 @@ func addRoutes(mux *http.ServeMux, cnf types.AppConfig, db *bun.DB) {
 
 	mux.Handle("POST /nota/v1/user", middleware.Make(CreateUserHandler(db)))
 
+	mux.Handle("POST /nota/v1/content", middleware.Make((CreateContentHandler(db))))
+	mux.Handle("GET /nota/v1/content", middleware.Make((GetContentHandler(db))))
 }

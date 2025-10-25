@@ -112,12 +112,31 @@ func Run(
 	return nil
 }
 
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 // Help us easily create the full server setup with all middleware and makes our dep more explicit
 func NewServer(logger *logger.ContextLogger, cnf types.AppConfig, db *bun.DB) http.Handler {
 
 	mux := http.NewServeMux()
 	addRoutes(mux, cnf, db)
 
+	if cnf.Mode == "dev" {
+
+		return withCORS(mux)
+	}
 	return mux
 }
 
